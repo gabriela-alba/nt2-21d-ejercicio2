@@ -9,14 +9,35 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js"></script>
-
+    
 </head>
 
 
 <div class="container-fluid mt-3" id="app">
-    <input type="text" class="form-control" v-model="criterioDeBusqueda"
-        placeholder="Ingresar un criterio de busqueda...">
-    <br>
+
+    <div class="row">
+        <div class="col-4">
+            <input type="text" class="form-control" v-model="criterioDeBusqueda"
+                placeholder="Ingresar un criterio de busqueda...">
+            <br>
+        </div>
+
+        <div class="col-4">
+            <input type="text" class="form-control" v-model="criterioDeBusquedaNombre"
+                placeholder="Buscar por Nombre">
+                <br>
+        </div>
+
+        <div class="col-4">
+            <input type="text" class="form-control" v-model="criterioDeBusquedaDNI"
+                placeholder="Buscar por DNI">
+        </div>
+
+        <div v-show="msjShow" class="alert alert-danger" role="alert">
+            {{msjError}}
+        </div>
+    </div>
+
     <div class="card-deck m-0">
         <div class="row">
             <div class="col" v-for="persona in personasFiltradas">
@@ -40,6 +61,11 @@
         el: '#app',
         data: {
             criterioDeBusqueda: '',
+            criterioDeBusquedaNombre: '',
+            criterioDeBusquedaDNI: '',
+            maxCaracteres: 3,
+            msjError:`Se debe ingresar al menos 3 dígitos.`,
+            msjShow: false,
             //Aquí, en este array es donde tienen que agregar su información
             personas: [
                 {
@@ -168,14 +194,23 @@
         computed: {
             personasFiltradas() {
                 return this.personas.filter((persona) => {
-                    let registroCompleto = `${persona.nombre} ${persona.apellido} ${persona.dni} ${persona.correo}`
-                    return registroCompleto.toLowerCase().includes(this.criterioDeBusqueda.toLowerCase())
-                });
+                                        let registroCompleto = `${persona.nombre} ${persona.apellido} ${persona.dni} ${persona.correo}`
+                                        return registroCompleto.toLowerCase().includes(this.criterioDeBusqueda.toLowerCase())       
+                                  }).filter((persona) => {
+                                        return this.filtroDeCampos (`${persona.nombre}`, this.criterioDeBusquedaNombre)        
+                                  }).filter((persona) => {
+                                        return this.filtroDeCampos (`${persona.dni}`, this.criterioDeBusquedaDNI)
+                                  });
             }
         },
         methods: {
             getNombreCompleto(persona) {
                 return `${persona.nombre} ${persona.apellido}`
+            },
+            filtroDeCampos(text, criterio){
+                if(criterio)
+                    this.msjShow = criterio.length < this.maxCaracteres
+                return criterio.length > this.maxCaracteres ? text.toLowerCase().includes(criterio.toLowerCase()) : text.toLowerCase()
             }
         }
     });
